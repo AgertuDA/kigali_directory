@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../models/listing.dart';
 import '../../theme.dart';
@@ -13,19 +14,19 @@ class DetailScreen extends StatefulWidget {
 }
 
 class _DetailScreenState extends State<DetailScreen> {
-  GoogleMapController? _mapController;
+  final MapController _mapController = MapController();
 
   Future<void> _launchNavigation() async {
     final l = widget.listing;
     final url = Uri.parse(
-      'https://www.google.com/maps/dir/?api=1&destination=${l.latitude},${l.longitude}&travelmode=driving',
+      'https://www.openstreetmap.org/?mlat=${l.latitude}&mlon=${l.longitude}#map=16/${l.latitude}/${l.longitude}',
     );
     if (await canLaunchUrl(url)) {
       await launchUrl(url, mode: LaunchMode.externalApplication);
     } else {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Could not open Google Maps')),
+          const SnackBar(content: Text('Could not open maps')),
         );
       }
     }
@@ -59,23 +60,42 @@ class _DetailScreenState extends State<DetailScreen> {
                   color: AppColors.surface.withOpacity(0.8),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.arrow_back_ios, color: AppColors.textPrimary, size: 18),
+                child: const Icon(Icons.arrow_back_ios,
+                    color: AppColors.textPrimary, size: 18),
               ),
               onPressed: () => Navigator.pop(context),
             ),
             flexibleSpace: FlexibleSpaceBar(
-              background: GoogleMap(
-                initialCameraPosition: CameraPosition(target: latLng, zoom: 15),
-                markers: {
-                  Marker(
-                    markerId: const MarkerId('listing'),
-                    position: latLng,
-                    infoWindow: InfoWindow(title: l.name, snippet: l.address),
+              background: FlutterMap(
+                mapController: _mapController,
+                options: MapOptions(
+                  initialCenter: latLng,
+                  initialZoom: 15,
+                  interactionOptions: const InteractionOptions(
+                    flags: InteractiveFlag.none,
                   ),
-                },
-                onMapCreated: (ctrl) => _mapController = ctrl,
-                myLocationButtonEnabled: false,
-                zoomControlsEnabled: false,
+                ),
+                children: [
+                  TileLayer(
+                    urlTemplate:
+                        'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                    userAgentPackageName: 'com.example.kigali_app',
+                  ),
+                  MarkerLayer(
+                    markers: [
+                      Marker(
+                        point: latLng,
+                        width: 40,
+                        height: 40,
+                        child: const Icon(
+                          Icons.location_on,
+                          color: AppColors.primary,
+                          size: 40,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
           ),
@@ -104,7 +124,8 @@ class _DetailScreenState extends State<DetailScreen> {
                             Row(
                               children: [
                                 Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 8, vertical: 3),
                                   decoration: BoxDecoration(
                                     color: AppColors.primary.withOpacity(0.15),
                                     borderRadius: BorderRadius.circular(6),
@@ -122,7 +143,9 @@ class _DetailScreenState extends State<DetailScreen> {
                                   const SizedBox(width: 8),
                                   Text(
                                     '${l.distanceKm!.toStringAsFixed(1)} km',
-                                    style: const TextStyle(color: AppColors.textMuted, fontSize: 13),
+                                    style: const TextStyle(
+                                        color: AppColors.textMuted,
+                                        fontSize: 13),
                                   ),
                                 ],
                               ],
@@ -137,7 +160,9 @@ class _DetailScreenState extends State<DetailScreen> {
                               children: List.generate(
                                 5,
                                 (i) => Icon(
-                                  i < l.rating!.floor() ? Icons.star : Icons.star_border,
+                                  i < l.rating!.floor()
+                                      ? Icons.star
+                                      : Icons.star_border,
                                   color: AppColors.starColor,
                                   size: 18,
                                 ),
@@ -146,7 +171,8 @@ class _DetailScreenState extends State<DetailScreen> {
                             if (l.reviewCount != null)
                               Text(
                                 '${l.reviewCount} reviews',
-                                style: const TextStyle(color: AppColors.textMuted, fontSize: 11),
+                                style: const TextStyle(
+                                    color: AppColors.textMuted, fontSize: 11),
                               ),
                           ],
                         ),
@@ -155,7 +181,10 @@ class _DetailScreenState extends State<DetailScreen> {
                   const SizedBox(height: 20),
 
                   // Info Cards
-                  _InfoRow(icon: Icons.location_on_outlined, label: 'Address', value: l.address),
+                  _InfoRow(
+                      icon: Icons.location_on_outlined,
+                      label: 'Address',
+                      value: l.address),
                   if (l.contactNumber.isNotEmpty)
                     GestureDetector(
                       onTap: _callPhone,
@@ -169,7 +198,8 @@ class _DetailScreenState extends State<DetailScreen> {
                   _InfoRow(
                     icon: Icons.my_location_outlined,
                     label: 'Coordinates',
-                    value: '${l.latitude.toStringAsFixed(4)}, ${l.longitude.toStringAsFixed(4)}',
+                    value:
+                        '${l.latitude.toStringAsFixed(4)}, ${l.longitude.toStringAsFixed(4)}',
                   ),
 
                   const SizedBox(height: 20),
@@ -184,7 +214,8 @@ class _DetailScreenState extends State<DetailScreen> {
                   const SizedBox(height: 8),
                   Text(
                     l.description,
-                    style: const TextStyle(color: AppColors.textSecondary, height: 1.5),
+                    style: const TextStyle(
+                        color: AppColors.textSecondary, height: 1.5),
                   ),
 
                   const SizedBox(height: 32),
@@ -209,7 +240,8 @@ class _DetailScreenState extends State<DetailScreen> {
                       child: OutlinedButton.icon(
                         onPressed: _callPhone,
                         icon: const Icon(Icons.phone, color: AppColors.accent),
-                        label: const Text('Call', style: TextStyle(color: AppColors.accent)),
+                        label: const Text('Call',
+                            style: TextStyle(color: AppColors.accent)),
                         style: OutlinedButton.styleFrom(
                           side: const BorderSide(color: AppColors.accent),
                           padding: const EdgeInsets.symmetric(vertical: 14),
@@ -253,7 +285,8 @@ class _InfoRow extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(label,
-                    style: const TextStyle(color: AppColors.textMuted, fontSize: 12)),
+                    style: const TextStyle(
+                        color: AppColors.textMuted, fontSize: 12)),
                 const SizedBox(height: 2),
                 Text(
                   value,

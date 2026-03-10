@@ -34,36 +34,53 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildHeader(),
-            _buildCategoryChips(),
-            _buildSearchBar(),
-            const SizedBox(height: 8),
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16),
-              child: Text(
-                'Near You',
-                style: TextStyle(
-                  color: AppColors.textPrimary,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              Color(0xFF0F2027),
+              Color(0xFF203A43),
+              Color(0xFF2C5364),
+            ],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        child: SafeArea(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildHeader(),
+              _buildCategoryChips(),
+              _buildSearchBar(),
+              const SizedBox(height: 8),
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16),
+                child: Text(
+                  'Near You',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 8),
-            Expanded(child: _buildListingsList()),
-          ],
+              const SizedBox(height: 8),
+              Expanded(child: _buildListingsList()),
+            ],
+          ),
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        backgroundColor: AppColors.primary,
+        backgroundColor: const Color(0xFF2C5364),
+        elevation: 6,
         onPressed: () {
-          Navigator.push(context, MaterialPageRoute(builder: (_) => const AddListingScreen()));
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (_) => const AddListingScreen()));
         },
-        child: const Icon(Icons.add, color: AppColors.background),
+        child: const Icon(Icons.add, color: Colors.white),
       ),
     );
   }
@@ -80,27 +97,31 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
               const Text(
                 'Kigali City',
                 style: TextStyle(
-                  color: AppColors.textPrimary,
-                  fontSize: 22,
+                  color: Colors.white,
+                  fontSize: 24,
                   fontWeight: FontWeight.bold,
                 ),
               ),
               Consumer<ap.AuthProvider>(
                 builder: (_, auth, __) => Text(
-                  'Welcome, ${auth.userProfile?.displayName ?? 'User'}',
-                  style: const TextStyle(color: AppColors.textSecondary, fontSize: 13),
+                  'Welcome, ${auth.userProfile?.displayName ?? 'User'} 👋',
+                  style: const TextStyle(
+                    color: Colors.white70,
+                    fontSize: 13,
+                  ),
                 ),
               ),
             ],
           ),
           Container(
-            width: 40,
-            height: 40,
+            width: 44,
+            height: 44,
             decoration: BoxDecoration(
-              color: AppColors.primary,
-              borderRadius: BorderRadius.circular(10),
+              color: Colors.white.withOpacity(0.15),
+              borderRadius: BorderRadius.circular(12),
             ),
-            child: const Icon(Icons.location_city, color: AppColors.background, size: 22),
+            child: const Icon(Icons.location_city,
+                color: Colors.white, size: 24),
           ),
         ],
       ),
@@ -121,16 +142,35 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                 child: FilterChip(
                   label: const Text('All'),
                   selected: provider.selectedCategory == null,
+                  selectedColor: const Color(0xFF2C5364),
+                  backgroundColor: Colors.white,
+                  labelStyle: TextStyle(
+                    color: provider.selectedCategory == null
+                        ? Colors.white
+                        : Colors.black87,
+                    fontSize: 13,
+                  ),
                   onSelected: (_) => provider.setCategory(null),
                 ),
               ),
               ...kCategories.map((cat) => Padding(
                     padding: const EdgeInsets.only(right: 8),
                     child: FilterChip(
-                      label: Text(cat),
+                      label: Text(
+                        cat,
+                        style: const TextStyle(fontSize: 13),
+                      ),
                       selected: provider.selectedCategory == cat,
+                      selectedColor: const Color(0xFF2C5364),
+                      backgroundColor: Colors.white,
+                      labelStyle: TextStyle(
+                        color: provider.selectedCategory == cat
+                            ? Colors.white
+                            : Colors.black87,
+                      ),
                       onSelected: (_) {
-                        provider.setCategory(provider.selectedCategory == cat ? null : cat);
+                        provider.setCategory(
+                            provider.selectedCategory == cat ? null : cat);
                       },
                     ),
                   )),
@@ -144,22 +184,31 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
   Widget _buildSearchBar() {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-      child: TextField(
-        controller: _searchCtrl,
-        style: const TextStyle(color: AppColors.textPrimary),
-        onChanged: (v) => context.read<ListingProvider>().setSearchQuery(v),
-        decoration: InputDecoration(
-          hintText: 'Search for a service',
-          prefixIcon: const Icon(Icons.search, color: AppColors.textMuted),
-          suffixIcon: _searchCtrl.text.isNotEmpty
-              ? IconButton(
-                  icon: const Icon(Icons.clear, color: AppColors.textMuted),
-                  onPressed: () {
-                    _searchCtrl.clear();
-                    context.read<ListingProvider>().setSearchQuery('');
-                  },
-                )
-              : null,
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(14),
+        ),
+        child: TextField(
+          controller: _searchCtrl,
+          style: const TextStyle(color: Colors.black87),
+          onChanged: (v) => context.read<ListingProvider>().setSearchQuery(v),
+          decoration: InputDecoration(
+            hintText: 'Search for a service...',
+            hintStyle: const TextStyle(color: Color.fromARGB(137, 237, 236, 236)),
+            prefixIcon:
+                const Icon(Icons.search, color: Color(0xFF2C5364)),
+            border: InputBorder.none,
+            suffixIcon: _searchCtrl.text.isNotEmpty
+                ? IconButton(
+                    icon: const Icon(Icons.clear, color: Colors.grey),
+                    onPressed: () {
+                      _searchCtrl.clear();
+                      context.read<ListingProvider>().setSearchQuery('');
+                    },
+                  )
+                : null,
+          ),
         ),
       ),
     );
@@ -169,7 +218,9 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
     return Consumer<ListingProvider>(
       builder: (_, provider, __) {
         if (provider.status == ListingStatus.loading) {
-          return const Center(child: CircularProgressIndicator(color: AppColors.primary));
+          return const Center(
+              child: CircularProgressIndicator(
+                  color: Color(0xFF2C5364)));
         }
 
         if (provider.status == ListingStatus.error) {
@@ -177,16 +228,20 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.error_outline, color: AppColors.error, size: 48),
+                const Icon(Icons.error_outline,
+                    color: Colors.red, size: 48),
                 const SizedBox(height: 12),
                 Text(
                   provider.errorMessage ?? 'Failed to load listings',
-                  style: const TextStyle(color: AppColors.textSecondary),
+                  style: const TextStyle(color: Colors.white70),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 16),
                 ElevatedButton(
                   onPressed: provider.startListening,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF2C5364),
+                  ),
                   child: const Text('Retry'),
                 ),
               ],
@@ -200,13 +255,15 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.search_off, color: AppColors.textMuted, size: 48),
+                const Icon(Icons.search_off,
+                    color: Colors.white54, size: 48),
                 const SizedBox(height: 12),
                 const Text(
                   'No listings found',
-                  style: TextStyle(color: AppColors.textSecondary),
+                  style: TextStyle(color: Colors.white70),
                 ),
-                if (provider.searchQuery.isNotEmpty || provider.selectedCategory != null)
+                if (provider.searchQuery.isNotEmpty ||
+                    provider.selectedCategory != null)
                   TextButton(
                     onPressed: provider.clearFilters,
                     child: const Text('Clear Filters'),
@@ -241,8 +298,15 @@ class _ListingCard extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(12),
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(14),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.08),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
         child: Row(
           children: [
@@ -250,10 +314,11 @@ class _ListingCard extends StatelessWidget {
               width: 48,
               height: 48,
               decoration: BoxDecoration(
-                color: AppColors.surfaceLight,
+                color: Colors.grey.shade100,
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: Icon(_categoryIcon(listing.category), color: AppColors.primary, size: 24),
+              child: Icon(_categoryIcon(listing.category),
+                  color: const Color(0xFF2C5364), size: 24),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -263,7 +328,7 @@ class _ListingCard extends StatelessWidget {
                   Text(
                     listing.name,
                     style: const TextStyle(
-                      color: AppColors.textPrimary,
+                      color: Colors.black87,
                       fontWeight: FontWeight.w600,
                       fontSize: 15,
                     ),
@@ -272,33 +337,31 @@ class _ListingCard extends StatelessWidget {
                   Row(
                     children: [
                       if (listing.rating != null) ...[
-                        const Icon(Icons.star, color: AppColors.starColor, size: 14),
+                        const Icon(Icons.star,
+                            color: Colors.orange, size: 14),
                         const SizedBox(width: 2),
                         Text(
                           listing.rating!.toStringAsFixed(1),
-                          style: const TextStyle(color: AppColors.starColor, fontSize: 13),
+                          style: const TextStyle(
+                              color: Colors.orange, fontSize: 13),
                         ),
                         const SizedBox(width: 6),
                       ],
                       Text(
                         listing.category,
-                        style: const TextStyle(color: AppColors.textSecondary, fontSize: 12),
+                        style:
+                            const TextStyle(color: Colors.black54, fontSize: 12),
                       ),
                     ],
                   ),
                 ],
               ),
             ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                if (listing.distanceKm != null)
-                  Text(
-                    '${listing.distanceKm!.toStringAsFixed(1)} km',
-                    style: const TextStyle(color: AppColors.textMuted, fontSize: 12),
-                  ),
-              ],
-            ),
+            if (listing.distanceKm != null)
+              Text(
+                '${listing.distanceKm!.toStringAsFixed(1)} km',
+                style: const TextStyle(color: Colors.black45, fontSize: 12),
+              ),
           ],
         ),
       ),
@@ -307,17 +370,28 @@ class _ListingCard extends StatelessWidget {
 
   IconData _categoryIcon(String cat) {
     switch (cat) {
-      case 'Hospital': return Icons.local_hospital;
-      case 'Police Station': return Icons.local_police;
-      case 'Library': return Icons.local_library;
-      case 'Restaurant': return Icons.restaurant;
-      case 'Café': return Icons.coffee;
-      case 'Park': return Icons.park;
-      case 'Tourist Attraction': return Icons.camera_alt;
-      case 'Pharmacy': return Icons.medication;
-      case 'School': return Icons.school;
-      case 'Bank': return Icons.account_balance;
-      default: return Icons.place;
+      case 'Hospital':
+        return Icons.local_hospital;
+      case 'Police Station':
+        return Icons.local_police;
+      case 'Library':
+        return Icons.local_library;
+      case 'Restaurant':
+        return Icons.restaurant;
+      case 'Café':
+        return Icons.coffee;
+      case 'Park':
+        return Icons.park;
+      case 'Tourist Attraction':
+        return Icons.camera_alt;
+      case 'Pharmacy':
+        return Icons.medication;
+      case 'School':
+        return Icons.school;
+      case 'Bank':
+        return Icons.account_balance;
+      default:
+        return Icons.place;
     }
   }
 }

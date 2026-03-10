@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
 import '../../providers/listing_provider.dart';
 import '../../models/listing.dart';
@@ -14,24 +15,28 @@ class MapViewScreen extends StatefulWidget {
 }
 
 class _MapViewScreenState extends State<MapViewScreen> {
-  GoogleMapController? _mapController;
+  final MapController _mapController = MapController();
   Listing? _selectedListing;
 
   // Kigali center
   static const LatLng _kigaliCenter = LatLng(-1.9441, 30.0619);
 
-  Set<Marker> _buildMarkers(List<Listing> listings) {
+  List<Marker> _buildMarkers(List<Listing> listings) {
     return listings.map((l) {
       return Marker(
-        markerId: MarkerId(l.id),
-        position: LatLng(l.latitude, l.longitude),
-        infoWindow: InfoWindow(title: l.name, snippet: l.category),
-        icon: BitmapDescriptor.defaultMarkerWithHue(
-          _selected(l) ? BitmapDescriptor.hueOrange : BitmapDescriptor.hueAzure,
+        point: LatLng(l.latitude, l.longitude),
+        width: 40,
+        height: 40,
+        child: GestureDetector(
+          onTap: () => setState(() => _selectedListing = l),
+          child: Icon(
+            Icons.location_on,
+            color: _selected(l) ? Colors.orange : AppColors.primary,
+            size: 40,
+          ),
         ),
-        onTap: () => setState(() => _selectedListing = l),
       );
-    }).toSet();
+    }).toList();
   }
 
   bool _selected(Listing l) => _selectedListing?.id == l.id;
@@ -46,14 +51,24 @@ class _MapViewScreenState extends State<MapViewScreen> {
 
           return Stack(
             children: [
-              GoogleMap(
-                initialCameraPosition: const CameraPosition(target: _kigaliCenter, zoom: 13),
-                markers: _buildMarkers(listings),
-                onMapCreated: (ctrl) => _mapController = ctrl,
-                onTap: (_) => setState(() => _selectedListing = null),
-                myLocationButtonEnabled: true,
-                zoomControlsEnabled: true,
-                mapType: MapType.normal,
+              FlutterMap(
+                mapController: _mapController,
+                options: MapOptions(
+                  initialCenter: _kigaliCenter,
+                  initialZoom: 13,
+                  onTap: (tapPosition, point) =>
+                      setState(() => _selectedListing = null),
+                ),
+                children: [
+                  TileLayer(
+                    urlTemplate:
+                        'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                    userAgentPackageName: 'com.example.kigali_app',
+                  ),
+                  MarkerLayer(
+                    markers: _buildMarkers(listings),
+                  ),
+                ],
               ),
 
               // Selected listing card
@@ -145,3 +160,4 @@ class _MapViewScreenState extends State<MapViewScreen> {
     );
   }
 }
+

@@ -4,7 +4,14 @@ import '../services/auth_service.dart';
 import '../models/user_profile.dart';
 // Handles all authentication state
 
-enum AuthStatus { initial, loading, authenticated, unauthenticated, emailNotVerified, error }
+enum AuthStatus {
+  initial,
+  loading,
+  authenticated,
+  unauthenticated,
+  emailNotVerified,
+  error
+}
 
 class AuthProvider extends ChangeNotifier {
   final AuthService _authService = AuthService();
@@ -31,6 +38,8 @@ class AuthProvider extends ChangeNotifier {
       _userProfile = null;
     } else if (!user.emailVerified) {
       _status = AuthStatus.emailNotVerified;
+      // Load user profile even when email is not verified
+      await _loadUserProfile();
     } else {
       _status = AuthStatus.authenticated;
       await _loadUserProfile();
@@ -76,16 +85,17 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final credential = await _authService.signIn(email: email, password: password);
+      final credential =
+          await _authService.signIn(email: email, password: password);
       await credential.user?.reload();
       _user = credential.user;
-      
+
       if (_user != null && !_user!.emailVerified) {
         _status = AuthStatus.emailNotVerified;
         notifyListeners();
         return false;
       }
-      
+
       _status = AuthStatus.authenticated;
       await _loadUserProfile();
       notifyListeners();
@@ -118,20 +128,32 @@ class AuthProvider extends ChangeNotifier {
 
   Future<void> updateNotifications(bool enabled) async {
     if (_user == null) return;
-    await _authService.updateNotificationPreference(_user!.uid, enabled);
-    _userProfile = _userProfile?.copyWith(notificationsEnabled: enabled);
-    notifyListeners();
+    try {
+      await _authService.updateNotificationPreference(_user!.uid, enabled);
+      _userProfile = _userProfile?.copyWith(notificationsEnabled: enabled);
+      notifyListeners();
+    } catch (e) {
+      // Handle error silently or log it
+      debugPrint('Error updating notification preference: $e');
+    }
   }
 
   String _mapFirebaseError(FirebaseAuthException e) {
     switch (e.code) {
-      case 'user-not-found': return 'No user found with this email.';
-      case 'wrong-password': return 'Incorrect password.';
-      case 'email-already-in-use': return 'Email is already registered.';
-      case 'weak-password': return 'Password is too weak (min 6 characters).';
-      case 'invalid-email': return 'Invalid email address.';
-      case 'too-many-requests': return 'Too many attempts. Please try later.';
-      default: return e.message ?? 'Authentication failed.';
+      case 'user-not-found':
+        return 'No user found with this email.';
+      case 'wrong-password':
+        return 'Incorrect password.';
+      case 'email-already-in-use':
+        return 'Email is already registered.';
+      case 'weak-password':
+        return 'Password is too weak (min 6 characters).';
+      case 'invalid-email':
+        return 'Invalid email address.';
+      case 'too-many-requests':
+        return 'Too many attempts. Please try later.';
+      default:
+        return e.message ?? 'Authentication failed.';
     }
   }
 }

@@ -36,7 +36,8 @@ class ListingProvider extends ChangeNotifier {
     }
     if (_searchQuery.isNotEmpty) {
       result = result
-          .where((l) => l.name.toLowerCase().contains(_searchQuery.toLowerCase()))
+          .where(
+              (l) => l.name.toLowerCase().contains(_searchQuery.toLowerCase()))
           .toList();
     }
     return result;
@@ -126,6 +127,10 @@ class ListingProvider extends ChangeNotifier {
   Future<bool> deleteListing(String id) async {
     try {
       await _service.deleteListing(id);
+      // Manually remove from local lists to ensure immediate UI update
+      _allListings.removeWhere((l) => l.id == id);
+      _userListings.removeWhere((l) => l.id == id);
+      notifyListeners();
       return true;
     } catch (e) {
       _errorMessage = 'Failed to delete listing: $e';
