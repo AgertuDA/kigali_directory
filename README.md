@@ -1,70 +1,110 @@
 # Kigali City Services & Places Directory
 
-A Flutter mobile application that helps residents and visitors in Kigali locate and navigate to important public services and places — including hospitals, police stations, libraries, restaurants, cafés, parks, tourist attractions, pharmacies, schools, and banks.
+A Flutter mobile application that helps Kigali residents locate and navigate to essential public services and lifestyle locations such as hospitals, police stations, libraries, restaurants, cafés, parks, and tourist attractions.
 
-The app integrates Firebase Authentication, Cloud Firestore, OpenStreetMap, and Provider state management to provide a real-time directory of services across the city.
-
----
-
-## Repository
-
-**GitHub:** https://github.com/Betelhemf567/kigali-city-services-directory
-
-> The Flutter project is located inside the `kigali_app` folder.
+This project integrates **Firebase Authentication** and **Cloud Firestore** with **Provider state management** to deliver a real-time, scalable, and user-friendly directory app.
 
 ---
 
-## App Features
+##  Features
 
-### Firebase Authentication
-- Email/password registration and login
-- Email verification required before accessing the app
-- Secure logout
-- User profiles stored in Firestore
+- **Authentication**
+  - Sign up, login, logout with Firebase Authentication
+  - Email verification enforced before access
+  - User profiles stored in Firestore (`users` collection)
 
-### Cloud Firestore (CRUD)
-- Create, read, update, and delete listings in real time
-- Only listing creators can edit or delete their own listings
+- **Location Listings (CRUD)**
+  - Create, read, update, delete listings in Firestore
+  - Each listing includes:
+    - Name, category, address, contact number, description
+    - Latitude & longitude coordinates
+    - CreatedBy (User UID) and timestamp
+  - Real-time updates reflected in UI via Provider
 
-### Search & Filtering
-- Search listings by name
-- Filter by category
-- Results update instantly
+- **Search & Filtering**
+  - Search listings by name
+  - Filter listings dynamically by category
 
-### Map View
-- All listings displayed as markers on an OpenStreetMap
-- No API key or billing required
+- **Detail Page & Map Integration**
+  - Embedded Google Map with marker for selected location
+  - Navigation button launches Google Maps directions
 
-### Listing Detail
-- Full listing info with embedded map marker
-- One-tap navigation via Google Maps app
-- Uses stored latitude and longitude
+- **State Management**
+  - Implemented using **Provider**
+  - Firestore operations handled in service layer
+  - UI updates automatically via `notifyListeners()`
 
-### State Management (Provider)
-- `ChangeNotifier`-based providers for auth and listings
-- Clean separation: UI → Provider → Service → Firebase
-- No direct Firebase calls from UI widgets
+- **Navigation**
+  - BottomNavigationBar with:
+    - Directory (Browse Listings)
+    - My Listings
+    - Map View
+    - Settings
 
-### Bottom Navigation
-- **Directory** — browse all listings
-- **Map View** — map showing all listings
-- **My Listings** — listings created by the current user
-- **Settings** — user profile and preferences
+- **Settings**
+  - Displays authenticated user profile
+  - Toggle for enabling/disabling notifications (simulated locally)
 
 ---
 
-## Project Structure
+## 🗂 Firestore Database Structure
+
+### Collections
+
+- **users**
+  ```json
+  {
+    "uid": "string",
+    "email": "string",
+    "displayName": "string",
+    "createdAt": "timestamp",
+    "notificationsEnabled": true/false
+  }
+
+
+- **listings**
+  ```json
+  {
+  "id": "string",
+  "name": "string",
+  "category": "Hospital | Police Station | Library | Restaurant | Café | Park | Tourist Attraction",
+  "address": "string",
+  "contactNumber": "string",
+  "description": "string",
+  "latitude": "double",
+  "longitude": "double",
+  "createdBy": "user UID",
+  "timestamp": "timestamp"
+  }
+
+---
+
+# Tech Stack
+
+### Frontend: Flutter (Material Design)
+
+### Backend: Firebase Authentication, Cloud Firestore
+
+### State Management: Provider
+
+### Maps: Google Maps Flutter plugin
+
+---
+
+
+# Project Structure
 
 ```
 lib/
 ├── main.dart
+├── home_screen.dart
 ├── firebase_options.dart
 ├── models/
 │   ├── listing_model.dart
 │   └── user_model.dart
 ├── services/
 │   ├── auth_service.dart
-│   └── firestore_service.dart
+│   └── listing_service.dart
 ├── providers/
 │   ├── auth_provider.dart
 │   └── listing_provider.dart
@@ -73,9 +113,10 @@ lib/
 │   │   ├── login_screen.dart
 │   │   ├── signup_screen.dart
 │   │   └── verify_email_screen.dart
-│   ├── home/
-│   │   └── home_screen.dart
+│   ├── detail/
+│   │   └── detail_screen.dart
 │   ├── directory/
+│   │   ├── add_listing_screen.dart
 │   │   └── directory_screen.dart
 │   ├── listing/
 │   │   ├── listing_detail_screen.dart
@@ -86,110 +127,38 @@ lib/
 │   │   └── my_listings_screen.dart
 │   └── settings/
 │       └── settings_screen.dart
-└── utils/
-    └── app_theme.dart
+└── theme.dart
 ```
-
----
-
-## Firestore Database Structure
-
-### Users Collection
-```
-/users/{uid}
-  email: string
-  displayName: string
-  createdAt: timestamp
-  notificationsEnabled: boolean
-```
-
-### Listings Collection
-```
-/listings/{listingId}
-  name: string
-  category: string
-  address: string
-  contactNumber: string
-  description: string
-  latitude: number
-  longitude: number
-  createdBy: string
-  timestamp: timestamp
-```
-
-### Supported Categories
-Hospital, Police Station, Library, Restaurant, Café, Park, Tourist Attraction, Pharmacy, School, Bank
 
 ---
 
 ## Setup Instructions
 
-### Prerequisites
-- Flutter SDK 3.0 or higher
-- Android Studio
-- Android Emulator or physical Android device
-- Firebase project
+### 1, Clone the repository
 
-### 1. Clone the Repository
-```bash
-git clone https://github.com/Betelhemf567/kigali-city-services-directory.git
-cd kigali-city-services-directory/kigali_app
+```
+git clone https://github.com/AgertuDA/kigali_directory.git
+
+cd kigali-directory
 ```
 
-### 2. Configure Firebase
-```bash
-dart pub global activate flutterfire_cli
-flutterfire configure
+### 2, Install dependencies:
+
 ```
-This generates `lib/firebase_options.dart`.
-
-### 3. Enable Firebase Services
-In the Firebase Console:
-- Authentication → Email/Password → Enable
-- Firestore Database → Create in test mode (region: `europe-west1`)
-
-### 4. Create Firestore Composite Index
-In Firestore → Indexes, create:
-
-| Collection | Field | Order |
-|---|---|---|
-| listings | createdBy | Ascending |
-| listings | timestamp | Descending |
-
-### 5. Register SHA-1 Fingerprint
-```bash
-cd android
-./gradlew signingReport
-```
-Copy the SHA-1 and add it in Firebase Console → Project Settings → Your Apps → Android → Add Fingerprint.
-
-### 6. Install Dependencies and Run
-```bash
 flutter pub get
+```
+
+### 3, Configure Firebase:
+```
+Add your google-services.json (Android) and GoogleService-Info.plist (iOS).
+
+Enable Firebase Authentication (Email/Password)
+
+Create Firestore collections: users, listings
+```
+
+### 4, Run the app
+
+```
 flutter run
 ```
-
----
-
-## Map Integration
-
-This app uses **OpenStreetMap** via the `flutter_map` package — free to use with no API key or billing required.
-
-The "Navigate" button on listing detail screens opens the device's Google Maps app for turn-by-turn directions.
-
----
-
-## Security Notes
-
-- `google-services.json` and `firebase_options.dart` are excluded via `.gitignore`
-- Firestore rules ensure only authenticated users can create listings
-- Only the creator of a listing can edit or delete it
-- Email verification is required before accessing the directory
-
----
-
-## Important Notes
-
-- Runs on Android emulator or Android device only
-- Web browsers are not supported
-- Minimum SDK: Android 6.0 (API 23)
