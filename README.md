@@ -26,8 +26,9 @@ This project integrates **Firebase Authentication** and **Cloud Firestore** with
   - Filter listings dynamically by category
 
 - **Detail Page & Map Integration**
-  - Embedded Google Map with marker for selected location
-  - Navigation button launches Google Maps directions
+  - Embedded OpenStreetMap with marker for selected location
+  - Navigation button launches external map directions
+  - No API key or billing required
 
 - **State Management**
   - Implemented using **Provider**
@@ -87,7 +88,7 @@ This project integrates **Firebase Authentication** and **Cloud Firestore** with
 
 ### State Management: Provider
 
-### Maps: Google Maps Flutter plugin
+### Maps: OpenStreetMap via the flutter_map package
 
 ---
 
