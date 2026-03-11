@@ -80,15 +80,15 @@ This project integrates **Firebase Authentication** and **Cloud Firestore** with
 
 ---
 
-# Tech Stack
+## Tech Stack
 
-### Frontend: Flutter (Material Design)
+ Frontend: Flutter (Material Design)
 
-### Backend: Firebase Authentication, Cloud Firestore
+ Backend: Firebase Authentication, Cloud Firestore
 
-### State Management: Provider
+ State Management: Provider
 
-### Maps: OpenStreetMap via the flutter_map package
+ Maps: OpenStreetMap via the flutter_map package
 
 ---
 
